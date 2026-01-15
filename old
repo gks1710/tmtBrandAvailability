@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang=en>
+<head>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<title>TMT Price Message Generator (Dual Theme)</title>
+<script src=https://cdn.tailwindcss.com></script>
+<style>body{font-family:'Inter',sans-serif;transition:background-color .3s,color .3s}.whatsapp-preview{white-space:pre-wrap;font-family:monospace;min-height:400px}.panel{transition:background-color .3s,border-color .3s}.input-group,.management-panel{transition:background-color .3s,border-color .3s}.size-input,select,input[type="text"],input[type="number"]{transition:background-color .3s,border-color .3s,color .3s}.overflow-y-auto::-webkit-scrollbar{display:none}.overflow-y-auto{-ms-overflow-style:none;scrollbar-width:none}.toggle-section{display:none}.toggle-section.active{display:block}.dark{background-color:#1a202c;color:#f7fafc}.dark .panel{background-color:#2d3748;border-color:#4a5568}.dark .input-group,.dark .management-panel{background-color:#2d3748;border-color:#4c51bf}.dark .size-input,.dark select,.dark input{background-color:#4a5568;border-color:#4a5568;color:#f7fafc}.dark .whatsapp-preview{background-color:#171923;color:#f7fafc}.dark .text-gray-400{color:#a0aec0}.dark .text-gray-200{color:#edf2f7}.light{background-color:#f7fafc;color:#1a202c}.light .panel{background-color:#fff;border-color:#e2e8f0}.light .input-group{background-color:#edf2f7}.light .size-input,.light select,.light input,.light .whatsapp-preview,.light label,.light span,.light h1,.light h2,.light h3{color:#1a202c!important}.light .size-input,.light select,.light input{background-color:#fff;border-color:#cbd5e0}.light .management-panel{background-color:#e6fffa;border-color:#38b2ac}.light .whatsapp-preview{background-color:#f0f4f8;color:#1a202c}.light .text-yellow-300{color:#d69e2e!important}.light .text-green-400{color:#38a169!important}.light .text-primary-blue{color:#4c51bf!important}.light .text-red-400{color:#e53e3e!important}.light .text-gray-400{color:#4a5568!important}.light .text-gray-200{color:#1a202c!important}</style>
+<script>tailwind.config={theme:{extend:{colors:{'primary-blue':'#4c51bf','dark-bg':'#1a202c','light-bg':'#2d3748','text-light':'#f7fafc',}}}}</script>
+</head>
+<body class=dark> <div class="flex flex-col md:flex-row min-h-screen">
+<div id=input-panel class="md:w-1/2 p-6 panel border-r border-gray-700 overflow-y-auto">
+<h1 class="text-2xl font-extrabold mb-4 text-text-light">GKS - TMT Price List Editor</h1>
+<div class="flex space-x-4 mb-4">
+<button id=theme-toggle onclick=toggleTheme() class="flex-grow py-2 bg-yellow-500 hover:bg-yellow-600 text-dark-bg font-bold rounded-lg shadow-lg transition duration-200">
+<span id=theme-icon>🌙</span> Switch to Light Mode
+</button>
+<button onclick=toggleManagementPanel() class="flex-grow py-2 bg-primary-blue hover:bg-indigo-700 text-text-light font-bold rounded-lg shadow-lg transition duration-200">
+⚙️ Manage Products
+</button>
+</div>
+<div id=management-panel class="toggle-section p-4 management-panel rounded-lg mb-6 border-2">
+<h2 class="text-xl font-bold mb-4 text-green-400">Add New Product</h2>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium mb-1">Product Type</label>
+<select id=newProductType class="w-full p-2 rounded" onchange=toggleNewProductFields()>
+<option value=range>Range (8mm to 16mm)</option>
+<option value=single>Single Value (5.5mm)</option>
+<option value=raigarh>Raigarh Static</option>
+<option value=sauda>Sauda Static</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Product Name</label>
+<input type=text id=newProductName placeholder="e.g., New TMT Brand" class="w-full p-2 rounded">
+</div>
+<div id=newProductRangeFields>
+<label class="block text-sm font-medium mb-1">Min/Value (Default)</label>
+<input type=number step=0.1 id=newProductMinValue value=8 class="w-full p-2 rounded">
+</div>
+<div id=newProductMaxFields>
+<label class="block text-sm font-medium mb-1">Max/Suffix (Default)</label>
+<input type=text id=newProductMaxValue value=16 class="w-full p-2 rounded">
+</div>
+</div>
+<button onclick=addProduct() class="mt-4 w-full py-2 bg-green-600 hover:bg-green-700 text-text-light font-bold rounded-lg transition duration-200">
++ Add Product
+</button>
+<h3 class="text-lg font-bold mt-6 mb-2 text-red-400">Manage/Delete Products</h3>
+<div id=delete-list class="space-y-2 max-h-40 overflow-y-auto">
+</div>
+</div>
+<div class=space-y-6 id=input-fields>
+<div class="input-group p-4 rounded-lg shadow-md">
+<label class="block text-sm font-medium mb-2">Header & Date</label>
+<div class="flex items-center space-x-2 text-lg">
+<span class=font-semibold>AR Enterprises</span>
+<span class=text-gray-400>|</span>
+<input type=text id=currentDate class="size-input text-base w-24" readonly>
+</div>
+</div>
+<h2 class="text-xl font-semibold mt-6 text-yellow-300">Range Inputs (mm to mm)</h2>
+<div id=range-inputs class=space-y-4></div>
+<h2 class="text-xl font-semibold mt-6 text-yellow-300">Single Value Inputs (e.g., 5.2mm)</h2>
+<div id=single-inputs class=space-y-4></div>
+<div class="input-group p-4 rounded-lg shadow-md">
+<h2 class="text-xl font-semibold text-primary-blue mb-2">Raigarh TMT</h2>
+<div id=raigarh-inputs class="space-y-3 mt-3"></div>
+<h2 class="text-xl font-semibold text-primary-blue mt-6 mb-2">Separate Sauda Static Items</h2>
+<div id=sauda-static-inputs class="space-y-3 mt-3"></div>
+</div>
+</div>
+</div>
+<div id=output-panel class="md:w-1/2 p-6 panel flex flex-col">
+<h1 class="text-2xl font-extrabold mb-6 text-green-400">WhatsApp Preview</h1>
+<button id=copy-button onclick=copyMessage() class="w-full py-3 bg-green-600 hover:bg-green-700 text-text-light font-bold rounded-lg shadow-lg transition duration-200">
+<svg xmlns=http://www.w3.org/2000/svg class="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill=currentColor>
+<path d="M15 8a3 3 0 10-2.977-2.993l-1.278 1.28a1 1 0 00-.018 1.415.5.5 0 11-.707.707 1 1 0 001.415-.018l1.28-1.278A3 3 0 0015 8z" />
+<path d="M6.5 14.75a.75.75 0 100-1.5.75.75 0 000 1.5z" />
+<path d="M2 10a2 2 0 012-2h3.5a.5.5 0 010 1H4a1 1 0 00-1 1v6a1 1 0 001 1h6a1 1 0 001-1v-3.5a.5.5 0 011 0V16a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z" />
+</svg>
+Copy Message to Clipboard
+</button>
+<div id=copy-status class="mt-2 text-center text-sm text-yellow-500 opacity-0 transition-opacity duration-300"></div>
+<div id=message-preview class="whatsapp-preview flex-grow p-4 rounded-lg shadow-xl text-sm overflow-auto mb-6 bg-gray-900">
+</div>
+</div>
+</div>
+<script>const PRODUCT_DEFINITION_KEY='tmt_product_definitions';const STATE_KEY='tmt_price_generator_state';const THEME_KEY='tmt_theme_preference';let editableItems={};const defaultEditableItems={range:[{id:'pilania',name:'Pilania Industries (Kawach TMT)',min:8,max:16,suffix:'',isSelected:true},{id:'pankaj',name:'Pankaj Ispat (Dwarka TMT)',min:8,max:20,suffix:'',isSelected:true},{id:'alankar',name:'Alankar alloys (Sagar tmt)',min:8,max:16,suffix:'+1000',isSelected:true},{id:'gravity-swadeshi',name:'Gravity ferrous (Swadeshi tmt)',min:8,max:25,suffix:'',isSelected:true},{id:'gravity-turbo',name:'Gravity ferrous (Ac turbo)',min:8,max:25,suffix:'+500',isSelected:true},{id:'raipur',name:'Raipur Power (Bheem TMT)',min:8,max:16,suffix:'+200',isSelected:true},{id:'gajpati-std',name:'Gajpati TMT',min:8,max:32,suffix:'',isSelected:true},{id:'gajpati-next',name:'Gajpati Next Light Weight',min:8,max:12,suffix:'+400',isSelected:true},{id:'maruti-nirmaan',name:'Maruti ferrous (Nirmaan tmt)',min:8,max:12,suffix:'',isSelected:true},{id:'maruti-buland',name:'Maruti ferrous (Buland tmt)',min:8,max:12,suffix:'+400',isSelected:true},],single:[{id:'tmt-6mm',name:'TMT 6mm (Raipur / Raigarh)',value:6,suffix:'mm',isSelected:true},{id:'tmt-52mm',name:'TMT 5.2mm',value:5.2,suffix:'mm',isSelected:true},{id:'tmt-5mm',name:'TMT 5mm',value:5,suffix:'mm',isSelected:true},{id:'tmt-48mm',name:'TMT 4.8mm',value:4.8,suffix:'mm',isSelected:true},{id:'round-55mm',name:'Round 5.5mm',value:5.5,suffix:'mm',isSelected:true},],static:[{id:'bs-tmt',name:'BS TMT',isSelected:true,category:'raigarh'},{id:'nr-tmt',name:'NR TMT',isSelected:true,category:'raigarh'},{id:'vaastu-tmt',name:'VAASTU TMT',isSelected:true,category:'raigarh'},{id:'sky-tmt',name:'SKY TMT',isSelected:true,category:'raigarh'},{id:'yug-tmt',name:'YUG TMT',isSelected:true,category:'raigarh'},{id:'binding-wire',name:'Binding Wire / Nails',isSelected:true,category:'sauda'},{id:'kamdhenu',name:'AL KAMDHENU GOLD',isSelected:true,category:'sauda'},{id:'rungta-rashmi',name:'Rungta TMT / Rashmi TMT',isSelected:true,category:'sauda'},{id:'blueline-others',name:'Blueline / Sarthak / Prime Gold / GK / GOEL / Shaurya /Neev /Jindal TMT(For Projects)',isSelected:true,category:'sauda',prefix:'▶ '},{id:'tata-sail-jsw',name:'Tata Tiscon / Sail / JSW TMT',isSelected:true,category:'sauda',prefix:'▶ '},]};const body=document.body;const dateInput=document.getElementById('currentDate');const rangeInputsContainer=document.getElementById('range-inputs');const singleInputsContainer=document.getElementById('single-inputs');const raigarhInputsContainer=document.getElementById('raigarh-inputs');const saudaStaticInputsContainer=document.getElementById('sauda-static-inputs');const messagePreview=document.getElementById('message-preview');const copyStatus=document.getElementById('copy-status');const managementPanel=document.getElementById('management-panel');const deleteListContainer=document.getElementById('delete-list');const newProductType=document.getElementById('newProductType');const newProductMinValue=document.getElementById('newProductMinValue');const newProductMaxValue=document.getElementById('newProductMaxValue');const newProductName=document.getElementById('newProductName');const themeToggleBtn=document.getElementById('theme-toggle');const themeIcon=document.getElementById('theme-icon');function loadTheme(){const savedTheme=localStorage.getItem(THEME_KEY)||'dark';applyTheme(savedTheme);}
+function applyTheme(theme){body.classList.remove('dark','light');body.classList.add(theme);if(theme==='dark'){themeToggleBtn.innerHTML='<span id="theme-icon">🌙</span> Switch to Light Mode';themeToggleBtn.classList.remove('bg-gray-400','text-dark-bg');themeToggleBtn.classList.add('bg-yellow-500','text-dark-bg');}else{themeToggleBtn.innerHTML='<span id="theme-icon">☀️</span> Switch to Dark Mode';themeToggleBtn.classList.remove('bg-yellow-500','text-dark-bg');themeToggleBtn.classList.add('bg-gray-400','text-dark-bg');}}
+function toggleTheme(){const currentTheme=body.classList.contains('dark')?'dark':'light';const newTheme=currentTheme==='dark'?'light':'dark';localStorage.setItem(THEME_KEY,newTheme);applyTheme(newTheme);}
+function generateUniqueId(name){return name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+function getCurrentDate(){const now=new Date();const day=String(now.getDate()).padStart(2,'0');const month=String(now.getMonth()+1).padStart(2,'0');const year=now.getFullYear();return`${day}-${month}-${year}`;}
+function isItemChecked(itemId){const checkbox=document.getElementById(`${itemId}-check`);return checkbox?checkbox.checked:false;}
+function createCheckbox(item,isSelected){return`<input type="checkbox"id="${item.id}-check"${isSelected?'checked':''}
+onchange="generateMessage(); saveState();"
+class="form-checkbox h-5 w-5 text-primary-blue bg-gray-600 border-gray-500 rounded focus:ring-primary-blue">`;}
+function toggleManagementPanel(){managementPanel.classList.toggle('active');updateDeleteList();toggleNewProductFields();}
+function toggleNewProductFields(){const type=newProductType.value;const minField=document.getElementById('newProductMinValue');const maxField=document.getElementById('newProductMaxValue');const minLabel=document.querySelector('#newProductRangeFields label');const maxLabel=document.querySelector('#newProductMaxFields label');if(type==='range'){minLabel.textContent='Min Value (e.g., 8)';maxLabel.textContent='Max Value (e.g., 16)';minField.type='number';minField.value=8;maxField.type='text';maxField.value=16;document.getElementById('newProductRangeFields').style.display='block';document.getElementById('newProductMaxFields').style.display='block';}else if(type==='single'){minLabel.textContent='Default Value (e.g., 5.5)';maxLabel.textContent='Suffix (e.g., mm)';minField.type='number';minField.value=5.5;maxField.type='text';maxField.value='mm';document.getElementById('newProductRangeFields').style.display='block';document.getElementById('newProductMaxFields').style.display='block';}else{document.getElementById('newProductRangeFields').style.display='none';document.getElementById('newProductMaxFields').style.display='none';}}
+function loadProductDefinitions(){try{const savedDefinitions=localStorage.getItem(PRODUCT_DEFINITION_KEY);if(savedDefinitions){editableItems=JSON.parse(savedDefinitions);}else{editableItems=defaultEditableItems;saveProductDefinitions();}}catch(e){editableItems=defaultEditableItems;}}
+function saveProductDefinitions(){try{localStorage.setItem(PRODUCT_DEFINITION_KEY,JSON.stringify(editableItems));}catch(e){}}
+function addProduct(){const type=newProductType.value;const name=newProductName.value.trim();if(!name)return alert('Product Name is required!');const newId=generateUniqueId(name);const newItem={id:newId,name:name,isSelected:true};if(type==='range'){newItem.min=newProductMinValue.value?parseFloat(newProductMinValue.value):8;newItem.max=newProductMaxValue.value||16;newItem.suffix=newProductMaxValue.value.toString().includes('+')?newProductMaxValue.value:'';editableItems.range.push(newItem);}else if(type==='single'){newItem.value=newProductMinValue.value?parseFloat(newProductMinValue.value):5.5;newItem.suffix=newProductMaxValue.value||'mm';editableItems.single.push(newItem);}else if(type==='raigarh'||type==='sauda'){newItem.category=type;editableItems.static.push(newItem);}else{return;}
+saveProductDefinitions();initializeInputs();updateDeleteList();alert(`Product"${name}"added to ${type}list.`);newProductName.value='';}
+function deleteProduct(id,type){if(!confirm(`Are you sure you want to delete product:${id}?`))return;if(type==='range'){editableItems.range=editableItems.range.filter(item=>item.id!==id);}else if(type==='single'){editableItems.single=editableItems.single.filter(item=>item.id!==id);}else if(type==='raigarh'||type==='sauda'){editableItems.static=editableItems.static.filter(item=>item.id!==id);}
+saveProductDefinitions();initializeInputs();updateDeleteList();localStorage.removeItem(STATE_KEY);}
+function updateDeleteList(){deleteListContainer.innerHTML='';const allItems=[...editableItems.range.map(i=>({...i,type:'range'})),...editableItems.single.map(i=>({...i,type:'single'})),...editableItems.static.filter(i=>i.category==='raigarh').map(i=>({...i,type:'raigarh'})),...editableItems.static.filter(i=>i.category==='sauda').map(i=>({...i,type:'sauda'})),];allItems.forEach(item=>{const div=document.createElement('div');div.className='flex items-center justify-between bg-gray-700 p-2 rounded';div.innerHTML=`<span class="text-sm">${item.name}(${item.type})</span><button onclick="deleteProduct('${item.id}', '${item.type}')"class="text-red-400 hover:text-red-500 text-xs font-bold">[X]Delete</button>`;deleteListContainer.appendChild(div);});}
+function saveState(){const state={range:editableItems.range.map(item=>({id:item.id,min:document.getElementById(`${item.id}-min`)?.value||item.min,max:document.getElementById(`${item.id}-max`)?.value||item.max,isSelected:isItemChecked(item.id)})),single:editableItems.single.map(item=>({id:item.id,value:document.getElementById(`${item.id}-value`)?.value||item.value,isSelected:isItemChecked(item.id)})),static:editableItems.static.map(item=>({id:item.id,isSelected:isItemChecked(item.id)}))};try{localStorage.setItem(STATE_KEY,JSON.stringify(state));}catch(e){}}
+function loadState(){try{const savedState=localStorage.getItem(STATE_KEY);if(savedState){const state=JSON.parse(savedState);state.range.forEach(savedItem=>{const originalItem=editableItems.range.find(i=>i.id===savedItem.id);if(originalItem){originalItem.isSelected=savedItem.isSelected;originalItem.min=savedItem.min;originalItem.max=savedItem.max;}});state.single.forEach(savedItem=>{const originalItem=editableItems.single.find(i=>i.id===savedItem.id);if(originalItem){originalItem.isSelected=savedItem.isSelected;originalItem.value=savedItem.value;}});state.static.forEach(savedItem=>{const originalItem=editableItems.static.find(i=>i.id===savedItem.id);if(originalItem){originalItem.isSelected=savedItem.isSelected;}});}}catch(e){}}
+function initializeInputs(){loadTheme();loadProductDefinitions();loadState();dateInput.value=getCurrentDate();rangeInputsContainer.innerHTML='';singleInputsContainer.innerHTML='';raigarhInputsContainer.innerHTML='';saudaStaticInputsContainer.innerHTML='';editableItems.range.forEach(item=>{const div=document.createElement('div');div.className='flex items-center space-x-2 input-group p-3 rounded-lg';div.innerHTML=`${createCheckbox(item,item.isSelected)}<label for="${item.id}-check"class="flex-grow font-medium text-gray-200">${item.name}<span class="text-sm text-yellow-400">${item.suffix}</span></label><input type="number"step="1"id="${item.id}-min"value="${item.min}"class="size-input rounded"oninput="generateMessage(); saveState();"><span class="text-gray-400">to</span><input type="number"step="1"id="${item.id}-max"value="${item.max}"class="size-input rounded"oninput="generateMessage(); saveState();"><span class="text-gray-400">mm</span>`;rangeInputsContainer.appendChild(div);});editableItems.single.forEach(item=>{const div=document.createElement('div');div.className='flex items-center space-x-2 input-group p-3 rounded-lg';div.innerHTML=`${createCheckbox(item,item.isSelected)}<label for="${item.id}-check"class="flex-grow font-medium text-gray-200">${item.name}</label><input type="number"step="0.1"id="${item.id}-value"value="${item.value}"class="size-input rounded w-16"oninput="generateMessage(); saveState();"><span class="text-gray-400">${item.suffix}</span>`;singleInputsContainer.appendChild(div);});editableItems.static.filter(i=>i.category==='raigarh').forEach(item=>{const div=document.createElement('div');div.className='flex items-center space-x-2';div.innerHTML=`${createCheckbox(item,item.isSelected)}<label for="${item.id}-check"class="font-medium text-gray-200">${item.name}</label>`;raigarhInputsContainer.appendChild(div);});editableItems.static.filter(i=>i.category==='sauda').forEach(item=>{const div=document.createElement('div');div.className='flex items-center space-x-2';div.innerHTML=`${createCheckbox(item,item.isSelected)}<label for="${item.id}-check"class="font-medium text-gray-200">${item.name}</label>`;saudaStaticInputsContainer.appendChild(div);});generateMessage();}
+function generateMessage(){const date=dateInput.value;let message=`AR Enterprises\n📅 ${date}\n\n`;let hasContent=false;editableItems.range.forEach(item=>{if(!isItemChecked(item.id))return;const min=document.getElementById(`${item.id}-min`)?.value||item.min;const max=document.getElementById(`${item.id}-max`)?.value||item.max;const suffix=item.suffix?`${item.suffix}`:'';message+=`*▶ ${item.name}${suffix}*\n ${min}mm to ${max}mm\n`;hasContent=true;});const raigarhItems=editableItems.static.filter(i=>i.category==='raigarh'&&isItemChecked(i.id));if(raigarhItems.length>0){message+=hasContent?'\n':'';message+=`🌆*RAIGARH TMT*\n`;raigarhItems.forEach(item=>{message+=`▶ ${item.name}\n`;});hasContent=true;}
+let saudaContent='';editableItems.single.forEach(item=>{if(!isItemChecked(item.id))return;const val=document.getElementById(`${item.id}-value`)?.value||item.value;let line=item.name;if(line.includes('TMT 6mm')){line=`TMT ${val}${item.suffix}(Raipur/Raigarh)`;}else if(line.includes('Round 5.5mm')){line=`Round ${val}${item.suffix}`;}else{line=`TMT ${val}${item.suffix}`;}
+saudaContent+=`▶ ${line}\n`;});editableItems.static.filter(i=>i.category==='sauda'&&isItemChecked(i.id)).forEach(item=>{const prefix=item.prefix||'▶ ';saudaContent+=`${prefix}${item.name}\n`;});if(saudaContent){message+=hasContent?'\n':'';message+=`📦*Separate Sauda*\n`;message+=saudaContent;hasContent=true;}
+messagePreview.innerText=message;}
+function copyMessage(){const textToCopy=messagePreview.innerText;if(navigator.clipboard){navigator.clipboard.writeText(textToCopy).then(()=>{showCopyStatus('Copied!');saveState();}).catch(err=>{console.error('Could not copy text: ',err);fallbackCopy(textToCopy);});}else{fallbackCopy(textToCopy);}}
+function fallbackCopy(text){const textarea=document.createElement('textarea');textarea.value=text;textarea.style.position='fixed';textarea.style.opacity='0';document.body.appendChild(textarea);textarea.select();try{const successful=document.execCommand('copy');if(successful){showCopyStatus('Copied! (Fallback)');saveState();}else{showCopyStatus('Copy failed, please copy manually.');}}catch(err){showCopyStatus('Copy failed, please copy manually.');}
+document.body.removeChild(textarea);}
+function showCopyStatus(message){copyStatus.innerText=message;copyStatus.classList.remove('opacity-0');copyStatus.classList.add('opacity-100');setTimeout(()=>{copyStatus.classList.remove('opacity-100');copyStatus.classList.add('opacity-0');},2000);}
+window.onload=initializeInputs;</script>
+</body>
+</html>
