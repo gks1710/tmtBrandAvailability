@@ -244,7 +244,7 @@ function setExtra(id,v){
 
 /* MESSAGE */
 function generate(){
- let m=`AR Enterprises\n📅 ${today()}\n\n`;
+ let m=`AR Enterprises\n📅 ${today()}\n*Today Loading Plan*\n\n`;
 
  products.filter(p=>p.type==="range"&&selected[p.id]?.on)
  .sort((a,b)=>a.name.localeCompare(b.name))
