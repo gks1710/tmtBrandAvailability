@@ -111,7 +111,7 @@ body{
 </div>
 
 <script>
-const GITHUB_RAW_URL = "https://raw.githubusercontent.com/gks1710/tmt-central-data/refs/heads/main/tmt-data.json";
+const GITHUB_RAW_URL = "https://raw.githubusercontent.com/gks1710/tmt-central-data/main/tmt-data.json";
 const GITHUB_API_URL = "https://api.github.com/repos/gks1710/tmt-central-data/contents/tmt-data.json";
 const GITHUB_TOKEN = "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";
 
@@ -178,35 +178,55 @@ async function updateToGitHub(){
   };
 
   try{
-    // get file SHA
+    // STEP 1: Get file SHA
     const fileRes = await fetch(GITHUB_API_URL, {
       headers: {
-        "Authorization": "Bearer " + GITHUB_TOKEN
+        "Authorization": "Bearer " + GITHUB_TOKEN,
+        "Accept": "application/vnd.github+json"
       }
     });
+
+    if(!fileRes.ok) throw "Cannot read file info";
+
     const fileData = await fileRes.json();
 
+    // STEP 2: Encode safely (Unicode safe)
+    const encodedContent = btoa(
+      unescape(encodeURIComponent(JSON.stringify(content, null, 2)))
+    );
+
+    // STEP 3: Update file
     const res = await fetch(GITHUB_API_URL, {
       method: "PUT",
       headers: {
         "Authorization": "Bearer " + GITHUB_TOKEN,
+        "Accept": "application/vnd.github+json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         message: "Update TMT data",
-        content: btoa(JSON.stringify(content, null, 2)),
-        sha: fileData.sha
+        content: encodedContent,
+        sha: fileData.sha,
+        branch: "main"
       })
     });
 
-    if(!res.ok) throw "Update failed";
-    alert("Data updated successfully");
+    if(!res.ok){
+      const err = await res.json();
+      console.error(err);
+      throw "Update failed";
+    }
+
+    alert("Data updated successfully ✅");
+
   }catch(e){
-    alert("Failed to update data");
+    alert("Failed to update data ❌");
+    console.error(e);
   }
 
   hideLoader();
 }
+
 
 
 
