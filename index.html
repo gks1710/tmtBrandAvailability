@@ -32,6 +32,12 @@ body{
 </head>
 
 <body>
+<div id="loader" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white p-4 rounded font-bold">
+    Syncing data, please wait…
+  </div>
+</div>
+
 
 <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -41,6 +47,13 @@ body{
 <div class="flex gap-2">
 <button onclick="toggle('sizePanel')" class="bg-blue-600 text-white px-4 py-2 rounded">Manage Sizes</button>
 <button onclick="toggle('productPanel')" class="bg-indigo-600 text-white px-4 py-2 rounded">Manage Products</button>
+<button onclick="fetchFromGitHub()" class="bg-yellow-600 text-white px-4 py-2 rounded">
+  Fetch Data
+</button>
+
+<button onclick="updateToGitHub()" class="bg-red-600 text-white px-4 py-2 rounded">
+  Update Data
+</button>
 </div>
 
 <div id="sizePanel" class="card p-4 hidden">
@@ -98,6 +111,10 @@ body{
 </div>
 
 <script>
+const GITHUB_RAW_URL = "https://raw.githubusercontent.com/gks1710/tmt-central-data/refs/heads/main/tmt-data.json";
+const GITHUB_API_URL = "https://api.github.com/repos/gks1710/tmt-central-data/contents/tmt-data.json";
+const GITHUB_TOKEN = "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";
+
 const SIZE_KEY="sizes";
 const PRODUCT_KEY="products";
 const SELECT_KEY="selected";
@@ -108,6 +125,15 @@ const $=id=>document.getElementById(id);
 const today=()=>new Date().toLocaleDateString("en-GB").replace(/\//g,"-");
 
 function toggle(id){$(id).classList.toggle("hidden");}
+
+function showLoader(msg="Syncing data, please wait…"){
+  $("loader").querySelector("div").innerText = msg;
+  $("loader").classList.remove("hidden");
+}
+function hideLoader(){
+  $("loader").classList.add("hidden");
+}
+
 
 function load(){
  sizes=JSON.parse(localStorage.getItem(SIZE_KEY))||[8,10,12,16,28,32];
@@ -120,6 +146,69 @@ function saveAll(){
  localStorage.setItem(PRODUCT_KEY,JSON.stringify(products));
  localStorage.setItem(SELECT_KEY,JSON.stringify(selected));
 }
+
+async function fetchFromGitHub(auto=false){
+  showLoader("Fetching data from GitHub…");
+  try{
+    const res = await fetch(GITHUB_RAW_URL + "?t=" + Date.now());
+    if(!res.ok) throw "Fetch failed";
+    const data = await res.json();
+
+    sizes = data.sizes || [];
+    products = data.products || [];
+    selected = data.selected || {};
+
+    saveAll();
+    renderSizes();
+    renderProducts();
+    renderSelection();
+  }catch(e){
+    if(!auto) alert("Failed to fetch data");
+  }
+  hideLoader();
+}
+
+async function updateToGitHub(){
+  showLoader("Updating data to GitHub…");
+
+  const content = {
+    sizes,
+    products,
+    selected
+  };
+
+  try{
+    // get file SHA
+    const fileRes = await fetch(GITHUB_API_URL, {
+      headers: {
+        "Authorization": "Bearer " + GITHUB_TOKEN
+      }
+    });
+    const fileData = await fileRes.json();
+
+    const res = await fetch(GITHUB_API_URL, {
+      method: "PUT",
+      headers: {
+        "Authorization": "Bearer " + GITHUB_TOKEN,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "Update TMT data",
+        content: btoa(JSON.stringify(content, null, 2)),
+        sha: fileData.sha
+      })
+    });
+
+    if(!res.ok) throw "Update failed";
+    alert("Data updated successfully");
+  }catch(e){
+    alert("Failed to update data");
+  }
+
+  hideLoader();
+}
+
+
 
 /* SIZE */
 function renderSizes(){
@@ -282,7 +371,14 @@ function copyMsg(){
  navigator.clipboard.writeText($("output").innerText).then(()=>alert("Copied"));
 }
 
-window.onload=load;
+/*window.onload=load;*/
+window.onload = () => {
+  load();
+  if(!products.length && !sizes.length){
+    fetchFromGitHub(true);
+  }
+};
+
 </script>
 
 </body>
